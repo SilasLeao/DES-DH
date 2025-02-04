@@ -22,8 +22,8 @@ class DiffieHellman:
 # Função principal que executa o processo de troca de chaves e criptografia
 def main():
     # Definição dos parâmetros Diffie-Hellman
-    p = 23  # Número primo
-    g = 5   # Base
+    p = 17  # Número primo
+    g = 7   # Base
 
     # Instancia o objeto
     dh = DiffieHellman(p, g)
@@ -32,6 +32,7 @@ def main():
     private_key_sender = dh.generate_private_key()
     public_key_sender = dh.generate_public_key(private_key_sender)
 
+    print("---Emissor---")
     print(f"Chave privada do emissor: {private_key_sender}")
     print(f"Chave pública do emissor: {public_key_sender}")
 

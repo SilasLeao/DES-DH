@@ -269,7 +269,7 @@ class CipherDES:
 
 
 if __name__ == "__main__":
-    message = "Chocolate123" # Mensagem exemplo
+    message = "Mensagem Muito Secreta" # Mensagem exemplo
     key = "27" # Chave exemplo
     des_cipher = CipherDES() # Instancia o objeto CipherDES
     des_cipher.encryption_result(key=key, plaintext=message) # Exibe os resultados da criptografia
