@@ -129,16 +129,16 @@ class CipherDES:
     def __init__(self):
         pass
 
+    # Função para preparar a chave (garante que a chave seja de 8 bytes)
+    def prepare_key(self, key):
+        return (key.encode('utf-8')[:8]).ljust(8, b'\x00')  # Preenche com 0 caso necessário
+
     # Função para aplicar permutações usando uma tabela
     def apply_permutation(self, bit_list, table):
         result = []
         for i in table:
             result.append(bit_list[i - 1])  # Permuta os bits conforme a tabela
         return result
-
-    # Função para preparar a chave (garante que a chave seja de 8 bytes)
-    def prepare_key(self, key):
-        return (key.encode('utf-8')[:8]).ljust(8, b'\x00') # Preenche com 0 caso necessário
 
     # Função para aplicar a operação XOR bit a bit entre dois conjuntos de bits
     def bitwise_xor(self, bits1, bits2):
@@ -149,7 +149,10 @@ class CipherDES:
 
     # Função para realizar uma rotação à esquerda nos bits
     def rotate_left(self, bit_list, n):
-        return bit_list[n:] + bit_list[:n]
+        length = len(bit_list)
+        n = n % length  # Garante que n não ultrapasse o tamanho da lista
+        rotated = [bit_list[(i + n) % length] for i in range(length)]
+        return rotated
 
     # Função para gerar as chaves de rodada a partir da chave original
     def generate_round_keys(self, key_bits):
@@ -159,11 +162,8 @@ class CipherDES:
 
         # Para cada número de deslocamento, rotaciona C e D e gera a chave de rodada
         for shift in self.SHIFT_COUNTS:
-            C = self.rotate_left(C, shift)
-            D = self.rotate_left(D, shift)
-            combined_key = C + D
-            round_key = self.apply_permutation(combined_key, self.PC2_TABLE) # Aplica permutação final (PC-2)
-            round_keys.append(round_key)
+            C, D = self.rotate_left(C, shift), self.rotate_left(D, shift)  # Rotaciona C e D
+            round_keys.append(self.apply_permutation(C + D, self.PC2_TABLE))  # Aplica permutação final (PC-2)
 
         return round_keys
 
@@ -226,8 +226,8 @@ class CipherDES:
     def encrypt(self, plaintext, key):
         key_data = self.prepare_key(key) # Prepara a chave
         key_bits = self.bytes_to_bits(key_data) # Converte a chave para bits
-        padded_message = self.pad_data(plaintext) # Adiciona padding aos dados
         round_keys = self.generate_round_keys(key_bits) # Gera as chaves de rodada
+        padded_message = self.pad_data(plaintext) # Adiciona padding aos dados
         encrypted_data = b''
 
         # Criptografa os dados em blocos de 8 bytes
