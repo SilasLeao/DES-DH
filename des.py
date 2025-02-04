@@ -21,23 +21,6 @@ FINAL_PERMUTATION  = [
     33, 1, 41, 9, 49, 17, 57, 25
 ]
 
-EXPANSION_TABLE = [
-    32, 1, 2, 3, 4, 5, 4, 5,
-    6, 7, 8, 9, 8, 9, 10, 11,
-    12, 13, 12, 13, 14, 15, 16, 17,
-    16, 17, 18, 19, 20, 21, 20, 21,
-    22, 23, 24, 25, 24, 25, 26, 27,
-    28, 29, 28, 29, 30, 31, 32, 1
-]
-
-PERMUTATION = [
-    16, 7, 20, 21, 29, 12, 28, 17,
-    1, 15, 23, 26, 5, 18, 31, 10,
-    2, 8, 24, 14, 32, 27, 3, 9,
-    19, 13, 30, 6, 22, 11, 4, 25
-]
-
-
 S_BOXES = [
     [
         [14, 4, 13, 1, 2, 15, 11, 8, 3, 10, 6, 12, 5, 9, 0, 7],
@@ -89,6 +72,15 @@ S_BOXES = [
     ]
 ]
 
+EXPANSION_TABLE = [
+    32, 1, 2, 3, 4, 5, 4, 5,
+    6, 7, 8, 9, 8, 9, 10, 11,
+    12, 13, 12, 13, 14, 15, 16, 17,
+    16, 17, 18, 19, 20, 21, 20, 21,
+    22, 23, 24, 25, 24, 25, 26, 27,
+    28, 29, 28, 29, 30, 31, 32, 1
+]
+
 PC1 = [
     57, 49, 41, 33, 25, 17, 9,
     1, 58, 50, 42, 34, 26, 18,
@@ -111,6 +103,13 @@ PC2 = [
     46, 42, 50, 36, 29, 32
 ]
 
+PERMUTATION = [
+    16, 7, 20, 21, 29, 12, 28, 17,
+    1, 15, 23, 26, 5, 18, 31, 10,
+    2, 8, 24, 14, 32, 27, 3, 9,
+    19, 13, 30, 6, 22, 11, 4, 25
+]
+
 SHIFTS = [
     1, 1, 2, 2, 2, 2, 2, 2,
     1, 2, 2, 2, 2, 2, 2, 1
@@ -121,11 +120,11 @@ class CipherDES:
     INITIAL_PERM = INITIAL_PERMUTATION
     FINAL_PERM = FINAL_PERMUTATION
     S_BOXES = S_BOXES
-    SHIFT_COUNTS = SHIFTS
     EXPANSION = EXPANSION_TABLE
     PC1_TABLE = PC1
     PC2_TABLE = PC2
     PERMUTATION = PERMUTATION
+    SHIFT_COUNTS = SHIFTS
 
     def __init__(self):
         pass
@@ -137,9 +136,9 @@ class CipherDES:
             result.append(bit_list[i - 1])  # Permuta os bits conforme a tabela
         return result
 
-    # Função para realizar uma rotação à esquerda nos bits
-    def rotate_left(self, bit_list, n):
-        return bit_list[n:] + bit_list[:n]
+    # Função para preparar a chave (garante que a chave seja de 8 bytes)
+    def prepare_key(self, key):
+        return (key.encode('utf-8')[:8]).ljust(8, b'\x00') # Preenche com 0 caso necessário
 
     # Função para aplicar a operação XOR bit a bit entre dois conjuntos de bits
     def bitwise_xor(self, bits1, bits2):
@@ -148,22 +147,9 @@ class CipherDES:
             result.append(b1 ^ b2) # Realiza a operação XOR entre os bits
         return result
 
-    # Função para preparar a chave (garante que a chave seja de 8 bytes)
-    def prepare_key(self, key):
-        return (key.encode('utf-8')[:8]).ljust(8, b'\x00') # Preenche com 0 caso necessário
-
-    # Função para adicionar padding ao dado (completa com 0's para múltiplos de 8 bytes)
-    def pad_data(self, data):
-        padding_size = 8 - len(data) % 8 # Calcula o tamanho do padding necessário
-        encoded_data = data.encode('utf-8') # Codifica os dados para bytes
-        encoded_data += bytes([padding_size] * padding_size) # Adiciona o padding
-        return encoded_data
-
-    # Função para remover o padding ao decifrar os dados
-    def remove_padding(self, data):
-        padding_size = data[-1] # O padding está no último byte
-        result = data[:-padding_size] # Remove o padding
-        return result.decode('utf-8') # Retorna os dados decodificados
+    # Função para realizar uma rotação à esquerda nos bits
+    def rotate_left(self, bit_list, n):
+        return bit_list[n:] + bit_list[:n]
 
     # Função para gerar as chaves de rodada a partir da chave original
     def generate_round_keys(self, key_bits):
@@ -180,6 +166,19 @@ class CipherDES:
             round_keys.append(round_key)
 
         return round_keys
+
+    # Função para adicionar padding ao dado (completa com 0's para múltiplos de 8 bytes)
+    def pad_data(self, data):
+        padding_size = 8 - len(data) % 8 # Calcula o tamanho do padding necessário
+        encoded_data = data.encode('utf-8') # Codifica os dados para bytes
+        encoded_data += bytes([padding_size] * padding_size) # Adiciona o padding
+        return encoded_data
+
+    # Função para remover o padding ao decifrar os dados
+    def remove_padding(self, data):
+        padding_size = data[-1] # O padding está no último byte
+        result = data[:-padding_size] # Remove o padding
+        return result.decode('utf-8') # Retorna os dados decodificados
 
     # Função para processar um bloco de dados usando as chaves de rodada
     def process_block(self, block_bits, round_keys):
@@ -270,7 +269,7 @@ class CipherDES:
 
 if __name__ == "__main__":
     message = "Mensagem Muito Secreta" # Mensagem exemplo
-    key = "27" # Chave exemplo
+    key = "27" # Chave exemplo para teste
     des_cipher = CipherDES() # Instancia o objeto CipherDES
     des_cipher.encryption_result(key=key, plaintext=message) # Exibe os resultados da criptografia
 
