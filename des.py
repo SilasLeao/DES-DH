@@ -266,7 +266,7 @@ class CipherDES:
         decrypted_text = self.decrypt(encrypted_data, key) # Descriptografa o texto
         print(f"Decrypted text: {decrypted_text}")
 
-
+# Teste de funcionamento do DES
 if __name__ == "__main__":
     message = "Mensagem Muito Secreta" # Mensagem exemplo
     key = "27" # Chave exemplo para teste
